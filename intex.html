@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>من أنت في Resident Evil؟</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap');
+
+  body {
+    font-family: "Cairo", sans-serif;
+    background-image: url('https://i.imgur.com/Zg8YnhR.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    backdrop-filter: brightness(0.7);
+  }
+
+  #quiz, #result { display: none; }
+
+  .container {
+    background: rgba(0, 0, 0, 0.65);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 20px auto;
+    max-width: 450px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+  }
+
+  .btn {
+    background: crimson;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    margin: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s;
+  }
+  .btn:hover { background: darkred; }
+
+  input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    width: 80%;
+    text-align: center;
+  }
+
+  img {
+    width: 180px;
+    border-radius: 15px;
+    margin-top: 10px;
+    border: 2px solid crimson;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    font-size: 14px;
+    color: #ff4444;
+    text-shadow: 0 0 5px black;
+  }
+</style>
+</head>
+<body>
+
+<div id="start" class="container">
+  <h2>🧬 من أنت في عالم Resident Evil؟</h2>
+  <p>أدخل اسمك لتبدأ التجربة!</p>
+  <input type="text" id="playerName" placeholder="اكتب اسمك">
+  <br><br>
+  <button class="btn" onclick="startGame()">ابدأ اللعبة</button>
+</div>
+
+<div id="quiz" class="container">
+  <h3 id="welcome"></h3>
+  <h2 id="question"></h2>
+  <div id="answers"></div>
+</div>
+
+<div id="result" class="container">
+  <h2 id="characterName"></h2>
+  <img id="characterImg" src="" alt="">
+  <p id="description"></p>
+  <button class="btn" onclick="restart()">🔁 إعادة اللعب</button>
+</div>
+
+<footer>
+  🎮 صُنع من طرف <b>لارا كروفت lxii7yl</b>
+</footer>
+
+<script>
+const questions = [
+  {
+    text: "ما سلاحك المفضل في مواجهة الزومبي؟",
+    answers: [
+      { text: "🔫 المسدس", character: "ليون" },
+      { text: "🧨 البندقية", character: "كريس" },
+      { text: "🔪 السكين", character: "جيل" },
+      { text: "🎯 القوس", character: "آدا" }
+    ]
+  },
+  {
+    text: "كيف تتصرف في المواقف الصعبة؟",
+    answers: [
+      { text: "أفكر بهدوء قبل التصرف", character: "ليون" },
+      { text: "أواجه بكل قوتي", character: "كريس" },
+      { text: "أتصرف بسرعة وذكاء", character: "جيل" },
+      { text: "أستخدم الخداع والمكر", character: "آدا" }
+    ]
+  },
+  {
+    text: "ما الذي يدفعك للقتال؟",
+    answers: [
+      { text: "العدالة", character: "كريس" },
+      { text: "الحب", character: "ليون" },
+      { text: "البقاء", character: "جيل" },
+      { text: "الأهداف الخفية", character: "آدا" }
+    ]
+  }
+];
+
+const characters = {
+  "ليون": {
+    img: "https://i.imgur.com/2kX3ufl.png",
+    desc: "أنت مثل ليون كينيدي — هادئ، ذكي، وشجاع في وجه الخطر."
+  },
+  "كريس": {
+    img: "https://i.imgur.com/haHUaDV.png",
+    desc: "أنت مثل كريس ريدفيلد — قوي، وفيّ، لا يتراجع أبدًا."
+  },
+  "جيل": {
+    img: "https://i.imgur.com/hsM6Y8N.png",
+    desc: "أنت مثل جيل فالنتاين — سريعة، حادة التفكير، وذات قلب قوي."
+  },
+  "آدا": {
+    img: "https://i.imgur.com/CTLDZ6J.png",
+    desc: "أنت مثل آدا وونغ — غامضة، ذكية، تعرفين ما تريدين."
+  }
+};
+
+let current = 0;
+let scores = { "ليون": 0, "كريس": 0, "جيل": 0, "آدا": 0 };
+let playerName = "";
+
+function startGame() {
+  playerName = document.getElementById("playerName").value.trim();
+  if (playerName === "") {
+    alert("من فضلك اكتب اسمك أولًا!");
+    return;
+  }
+  document.getElementById("start").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+  document.getElementById("welcome").innerText = "مرحبًا يا " + playerName + "!";
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[current];
+  document.getElementById("question").innerText = q.text;
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+  q.answers.forEach(a => {
+    const btn = document.createElement("button");
+    btn.classList.add("btn");
+    btn.textContent = a.text;
+    btn.onclick = () => chooseAnswer(a.character);
+    answersDiv.appendChild(btn);
+  });
+}
+
+function chooseAnswer(character) {
+  scores[character]++;
+  current++;
+  if (current < questions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("result").style.display = "block";
+
+  const topCharacter = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+  const char = characters[topCharacter];
+  document.getElementById("characterName").innerText = "👏 " + playerName + "، أنت تشبه " + topCharacter + "!";
+  document.getElementById("characterImg").src = char.img;
+  document.getElementById("description").innerText = char.desc;
+}
+
+function restart() {
+  current = 0;
+  scores = { "ليون": 0, "كريس": 0, "جيل": 0, "آدا": 0 };
+  document.getElementById("result").style.display = "none";
+  document.getElementById("start").style.display = "block";
+}
+</script>
+
+</body>
+</html>
